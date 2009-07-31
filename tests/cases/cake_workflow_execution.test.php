@@ -11,7 +11,6 @@ class MyServiceTestObject implements ezcWorkflowServiceObject {
 	}
 	
 	public function execute( ezcWorkflowExecution $execution ) {
-		echo $this->message;
 		$execution->setVariable( 'choice', true );
 		return true;
 	}
@@ -42,35 +41,35 @@ class CakeWorkflowExecutionTestCase extends CakeTestCase {
 	
 	
 	private function buildWorkflow() {
-			$workflow = new ezcWorkflow( 'Test' );
-			$initNode = new ezcWorkflowNodeVariableSet(array('init' => 'testValue'));
-			$input = new ezcWorkflowNodeInput(
-				array( 'choice' => new ezcWorkflowConditionIsBool )
-			);
+		$workflow = new ezcWorkflow( 'Test' );
+		$initNode = new ezcWorkflowNodeVariableSet(array('init' => 'testValue'));
+		$input = new ezcWorkflowNodeInput(
+			array( 'choice' => new ezcWorkflowConditionIsBool )
+		);
 
-			$workflow->startNode->addOutNode( $initNode );
-			$initNode->addOutNode($input); 
-			$branch = new ezcWorkflowNodeExclusiveChoice;
-			$branch->addInNode( $input );
-			$trueNode = new ezcWorkflowNodeAction( array( 'class' => 'MyServiceTestObject',
-			 'arguments' => array( 'message: TRUE' ) )
-			);
-			$falseNode = new ezcWorkflowNodeAction( array( 'class' => 'MyServiceTestObject',
-			 'arguments' => array( 'message: FALSE' ) )
-			);
+		$workflow->startNode->addOutNode( $initNode );
+		$initNode->addOutNode($input); 
+		$branch = new ezcWorkflowNodeExclusiveChoice;
+		$branch->addInNode( $input );
+		$trueNode = new ezcWorkflowNodeAction( array( 'class' => 'MyServiceTestObject',
+		 'arguments' => array( 'message: TRUE' ) )
+		);
+		$falseNode = new ezcWorkflowNodeAction( array( 'class' => 'MyServiceTestObject',
+		 'arguments' => array( 'message: FALSE' ) )
+		);
 
-			$branch->addConditionalOutNode(
-				new ezcWorkflowConditionVariable( 'choice', new ezcWorkflowConditionIsTrue ),
-			$trueNode );
-			$branch->addConditionalOutNode(
-				new ezcWorkflowConditionVariable( 'choice', new ezcWorkflowConditionIsFalse ),
-				$falseNode
-			);
-			$merge = new ezcWorkflowNodeSimpleMerge;
-			$merge->addInNode( $trueNode );
-			$merge->addInNode( $falseNode );
-			$merge->addOutNode( $workflow->endNode );
-			return $workflow;
+		$branch->addConditionalOutNode(
+			new ezcWorkflowConditionVariable( 'choice', new ezcWorkflowConditionIsTrue ),
+		$trueNode );
+		$branch->addConditionalOutNode(
+			new ezcWorkflowConditionVariable( 'choice', new ezcWorkflowConditionIsFalse ),
+			$falseNode
+		);
+		$merge = new ezcWorkflowNodeSimpleMerge;
+		$merge->addInNode( $trueNode );
+		$merge->addInNode( $falseNode );
+		$merge->addOutNode( $workflow->endNode );
+		return $workflow;
 	}
 	
 	function testSimpleExecution() {
@@ -98,6 +97,20 @@ class CakeWorkflowExecutionTestCase extends CakeTestCase {
 			$this->assertNotNull($e->getMessage());
 		}
 		
+		//Now lets create another execution and make it go to the end
+		$execution = new CakeWorkflowExecution();
+		$execution->workflow = $this->Definition->loadByName('Test');
+		$id = $execution->start();
+		$this->assertEqual('choice',key($execution->getWaitingFor()));
+		$execution->resume(array('choice' => true));
+		$this->assertTrue($execution->hasEnded());
+		
+		//Now let's check again that the execution is not in the database anymore
+		try {
+			$execution = new CakeWorkflowExecution($id);
+		} catch (Exception $e) {
+			$this->assertNotNull($e->getMessage());
+		}
 	}
 	
 }
