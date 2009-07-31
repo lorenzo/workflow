@@ -1,0 +1,521 @@
+eZ Components - Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. contents:: Table of Contents
+
+Introduction
+============
+
+Business enterprises need to reduce the cost of doing business and continually
+develop new services and products. Enterprise Content Management helps with
+storing business-critical content (customer data, documents, etc.) in a central
+repository and in a unified way. Workflow Management provides the methodologies
+and software that help with organizing the processes that operate on this
+content inside an organization.
+
+The relationship between Enterprise Content Management and Workflow
+Management is analogous to that of attributes (data) and methods (operations on
+the data) that are encapsulated in a class in object-oriented programming.
+
+The Workflow component provides a virtual machine that executes workflows
+represented through object graphs. These object graphs can be created
+programmatically through the software component's Workflow Definition API.
+Alternatively, a workflow definition can be loaded from an XML file. Object
+graph and XML file are two different representations of a workflow definition
+that uses a backend language built on the workflow patterns.
+
+More information on the theoretical background is available `here`__.
+
+__ Workflow_theoretical_background.html
+
+Class Overview
+==============
+
+This section gives you an overview of the main classes of the Workflow
+component.
+
+ezcWorkflow
+
+  An object of the ezcWorkflow class represents a workflow.
+
+Workflow Execution
+------------------
+
+ezcWorkflowExecutionNonInteractive
+
+  An object of the ezcWorkflowExecutionNonInteractive class can execute
+  non-interactive workflows, in other words workflows that contains no input
+  nodes and no sub-workflows.
+
+ezcWorkflowDatabaseExecution
+
+  An object of the ezcWorkflowDatabaseExecution class can execute interactive
+  workflows. The persistence data is stored using a relational database.
+
+Workflow Definition
+-------------------
+
+ezcWorkflowDefinitionStorageXml
+
+  The ezcWorkflowDefinitionStorageXml class provides the functionality to save
+  workflow definitions to and load workflow definitions from XML files.
+
+ezcWorkflowDatabaseDefinitionStorage
+
+  The ezcWorkflowDatabaseDefinition Storageclass provides the functionality to
+  save workflow definitions to and load workflow definitions from a relational
+  database.
+
+Graph Node Classes
+------------------
+
+Objects of the ezcWorkflowNode classes represent the nodes of a workflow.
+
+ezcWorkflowNode
+
+  ezcWorkflowNode is the abstract base class for all graph node classes.
+
+ezcWorkflowNodeStart
+
+  An object of the ezcWorkflowNodeStart class represents the one and only start
+  node of a workflow. The execution of the workflow starts here.
+
+  Creating an object of the ezcWorkflow class automatically creates the start
+  node for this new workflow. It can be accessed through the startNode property.
+
+ezcWorkflowNodeEnd
+
+  An object of the ezcWorkflowNodeEnd class represents an end node of a
+  workflow. A workflow must have at least one end node. The execution of the
+  workflow ends when an end node is reached.
+
+  Creating an object of the ezcWorkflow class automatically creates a default
+  end node for this new workflow. It can be accessed through the endNode
+  property.
+  
+ezcWorkflowNodeCancel
+
+  As soon as a node of the ezcWorkflowNodeCancel type is activated, the complete
+  workflow instance is removed. This includes currently executing nodes, those
+  which may execute at some future time, and all parent and sub-workflows. The
+  workflow instance is recorded as having completed unsuccessfully.
+
+ezcWorkflowNodeFinally
+
+  Start node of a sequence of final activities that is executed when a workflow
+  execution is cancelled.
+
+  Creating an object of the ezcWorkflow class automatically creates the finally
+  node for this new workflow. It can be accessed through the finallyNode
+  property.
+
+ezcWorkflowNodeAction
+
+  An object of the ezcWorkflowNodeAction class represents an activity node. When
+  the node is reached, the business logic that is implemented by the associated
+  service object is executed.
+
+ezcWorkflowNodeSubWorkflow
+
+  An object of the ezcWorkflowNodeSubWorkflow class represents a sub-workflow.
+  When the node is reached, the specified sub-workflow is started. The workflow
+  is suspended until the sub-workflow has finished executing.
+
+ezcWorkflowNodeInput
+
+  An object of the ezcWorkflowNodeInput class represents an input node. When the
+  node is reached, the workflow engine will suspend the workflow execution if
+  the specified input data is not available (first activation). While the
+  workflow is suspended, the application that embeds the workflow engine may
+  supply the input data and resume the workflow execution (second activation of
+  the input node). Input data is stored in a workflow variable.
+
+ezcWorkflowNodeVariableSet
+
+  An object of the ezcWorkflowNodeVariableSet class sets a specified workflow
+  variable to a given value.
+
+ezcWorkflowNodeVariableUnset
+
+  An object of the ezcWorkflowNodeVariableUnset class unsets a specified
+  workflow variable.
+
+ezcWorkflowNodeVariableAdd
+
+  An object of the ezcWorkflowNodeVariableAdd class adds a given operand, either
+  a constant or the value of another workflow variable, to a specified workflow
+  variable.
+
+ezcWorkflowNodeVariableSub
+
+  An object of the ezcWorkflowNodeVariableSub class subtracts a given operand,
+  either a constant or the value of another workflow variable, from a specified
+  workflow variable.
+
+ezcWorkflowNodeVariableMul
+
+  An object of the ezcWorkflowNodeVariableMul class multiplies a specified
+  workflow variable with a given operand, either a constant or the value of
+  another workflow variable.
+
+ezcWorkflowNodeVariableDiv
+
+  An object of the ezcWorkflowNodeVariableDiv class divides a specified workflow
+  variable by a given operand, either a constant or the value of another
+  workflow variable.
+
+ezcWorkflowNodeVariableIncrement
+
+  An object of the ezcWorkflowNodeVariableIncrement class increments the value
+  of a specified workflow variable.
+
+ezcWorkflowNodeVariableDecrement
+
+  An object of the ezcWorkflowNodeVariableDecrement class decrements the value
+  of a specified workflow variable.
+
+ezcWorkflowNodeParallelSplit
+
+  The ezcWorkflowNodeParallelSplit class implements the Parallel Split workflow
+  pattern.
+
+  The Parallel Split workflow pattern divides one thread of execution
+  unconditionally into multiple parallel threads of execution.
+
+  Use Case Example: After the credit card specified by the customer has been
+  successfully charged, the activities of sending a confirmation email and
+  starting the shipping process can be executed in parallel.
+
+ezcWorkflowNodeSynchronization
+
+  The ezcWorkflowNodeSynchronization class implements the Synchronization
+  workflow pattern.
+
+  The Synchronization workflow pattern synchronizes multiple parallel threads of
+  execution into a single thread of execution. Workflow execution continues once
+  all threads of execution that are to be synchronized have finished executing
+  (exactly once).
+
+  Use Case Example: After the confirmation email has been sent and the shipping
+  process has been completed, the order can be archived.
+
+ezcWorkflowNodeExclusiveChoice
+
+  The ezcWorkflowNodeExclusiveChoice class implements the Exclusive Choice
+  workflow pattern.
+
+  The Exclusive Choice workflow pattern defines multiple possible paths for the
+  workflow of which exactly one is chosen.
+
+  Use Case Example: After an order has been received, the payment can be
+  performed by credit card or bank transfer.
+
+ezcWorkflowNodeSimpleMerge
+
+  The ezcWorkflowNodeSimpleMerge class implements the Simple Merge workflow
+  pattern.
+
+  The Simple Merge workflow pattern is to be used to merge the possible paths
+  that are defined by a preceding Exclusive Choice. It is assumed that of these
+  possible paths exactly one is taken and no synchronization takes place.
+
+  Use Case Example: After the payment has been performed by either credit card
+  or bank transfer, the order can be processed further.
+
+ezcWorkflowNodeLoop
+
+  The ezcWorkflowNodeLoop class is a specialization of the
+  ezcWorkflowNodeExclusiveChoice class and may be used to conveniently express
+  loops.
+
+ezcWorkflowNodeMultiChoice
+
+  The ezcWorkflowNodeMultiChoice class implements the Multi Choice workflow
+  pattern.
+
+  The Multi-Choice workflow pattern defines multiple possible paths for the
+  workflow of which one or more are chosen. It is a generalization of the
+  Parallel Split and Exclusive Choice workflow patterns.
+
+ezcWorkflowNodeSynchronizingMerge
+
+  The ezcWorkflowNodeSynchronizingMerge class implements the Synchronizing
+  Merge workflow pattern.
+
+  The Synchronizing Merge workflow pattern is to be used to synchronize multiple
+  parallel threads of execution that are activated by a preceding Multi-Choice.
+
+ezcWorkflowNodeDiscriminator
+
+  The ezcWorkflowNodeDiscriminator class implements the Discriminator workflow
+  pattern.
+
+  The Discriminator workflow pattern can be applied when the assumption we made
+  for the Simple Merge workflow pattern does not hold. It can deal with merge
+  situations where multiple incoming branches may run in parallel. It activates
+  its outgoing node after being activated by the first incoming branch and then
+  waits for all remaining branches to complete before it resets itself. After
+  the reset the Discriminator can be triggered again.
+
+  Use Case Example: To improve response time, an action is delegated to several
+  distributed servers. The first response proceeds the flow, the other responses
+  are ignored.
+
+Condition Classes
+-----------------
+
+The ezcWorkflowCondition classes can be used to express branch conditions and
+input validation.
+
+ezcWorkflowConditionVariable
+
+  An object of the ezcWorkflowConditionVariable loads a workflow variable and
+  evaluates another ezcWorkflowCondition object for it.
+
+ezcWorkflowConditionNot
+
+  An object of the ezcWorkflowConditionNot decorates an ezcWorkflowCondition
+  object and negates its expression.
+
+ezcWorkflowConditionAnd
+
+  An object of the ezcWorkflowConditionAnd class represents a boolean AND
+  expression. It can hold an arbitrary number of ezcWorkflowCondition objects.
+
+ezcWorkflowConditionOr
+
+  An object of the ezcWorkflowConditionOr class represents a boolean OR
+  expression. It can hold an arbitrary number of ezcWorkflowCondition objects.
+
+ezcWorkflowConditionXor
+
+  An object of the ezcWorkflowConditionXor class represents a boolean XOR
+  expression. It can hold an arbitrary number of ezcWorkflowCondition objects.
+
+ezcWorkflowConditionIsTrue
+
+  The condition represented by an ezcWorkflowConditionIsTrue object evaluates to
+  true when the associated workflow variable has the value true.
+
+ezcWorkflowConditionIsFalse
+
+  The condition represented by an ezcWorkflowConditionIsFalse object evaluates
+  to true when the associated workflow variable has the value false.
+
+ezcWorkflowConditionIsEqual
+
+  The condition represented by an ezcWorkflowConditionIsEqual object evaluates
+  to true when the associated workflow variable is equal to the comparison
+  value.
+
+ezcWorkflowConditionIsNotEqual
+
+  The condition represented by an ezcWorkflowConditionIsNotEqual object
+  evaluates to true when the associated workflow variable is not equal to the
+  comparison value.
+
+ezcWorkflowConditionIsGreaterThan
+
+  The condition represented by an ezcWorkflowConditionIsGreaterThan object
+  evaluates to true when the associated workflow variable is greater than the
+  comparison value.
+
+ezcWorkflowConditionIsEqualOrGreaterThan
+
+  The condition represented by an ezcWorkflowConditionIsEqualOrGreaterThan
+  object evaluates to true when the associated workflow variable is equal to or
+  greater than the comparison value.
+
+ezcWorkflowConditionIsLessThan
+
+  The condition represented by an ezcWorkflowConditionIsLessThan object
+  evaluates to true when the associated workflow variable is less than the
+  comparison value.
+
+ezcWorkflowConditionIsEqualOrLessThan
+
+  The condition represented by an ezcWorkflowConditionIsEqualOrLessThan
+  object evaluates to true when the associated workflow variable is equal to or
+  less than the comparison value.
+
+ezcWorkflowConditionInArray
+
+  The condition represented by an ezcWorkflowConditionInArray object evaluates
+  to true when the associated workflow variable is in the specified array.
+  
+ezcWorkflowConditionIsAnything
+
+  The condition represented by an ezcWorkflowConditionIsAnything object always
+  evaluates to true.
+
+ezcWorkflowConditionIsArray
+
+  The condition represented by an ezcWorkflowConditionIsArray object evaluates
+  to true when the associated workflow variable is an array.
+
+ezcWorkflowConditionIsBool
+
+  The condition represented by an ezcWorkflowConditionIsBool object evaluates to
+  true when the associated workflow variable is a boolean.
+
+ezcWorkflowConditionIsFloat
+
+  The condition represented by an ezcWorkflowConditionIsFloat object evaluates
+  to true when the associated workflow variable is a float.
+
+ezcWorkflowConditionIsInteger
+
+  The condition represented by an ezcWorkflowConditionIsInteger object evaluates
+  to true when the associated workflow variable is an integer.
+
+ezcWorkflowConditionIsObject
+
+  The condition represented by an ezcWorkflowConditionIsObject object evaluates
+  to true when the associated workflow variable is an object.
+
+ezcWorkflowConditionIsString
+
+  The condition represented by an ezcWorkflowConditionIsString object evaluates
+  to true when the associated workflow variable is a string.
+
+Workflow Definition Usage
+=========================
+
+This section gives a few basic examples on how to create, save and load
+workflows. It also demonstrates how to make a graphical representation of your
+workflow.
+
+Creating a simple workflow programmatically
+-------------------------------------------
+
+This example shows how to set up a fairly simple workflow that will execute
+differently based on the variable 'choice'.
+
+.. include:: tutorial_example_01.php
+   :literal:
+
+Adding custom PHP code to your workflow and manipulating workflow variables
+---------------------------------------------------------------------------
+
+In the previous example the $trueNode and $falseNodes where action
+objects. However, in order to make them work we must add service objects. The
+following example replaces the lines where $trueNode and $falseNode are created.
+
+.. include:: tutorial_example_01a.php
+   :literal:
+
+When this action node is executed it will load the service object with the
+parameters specified and run the execute() method. Our execute method will
+print the message passed to the constructor and change the workflow variable
+'choice'.
+
+The execute() method of a service object may return false to indicate that it is
+not finished yet. The workflow execution will then be suspended. The next time
+the workflow execution is resumed the service object's execute() method will be
+invoked again.
+
+Saving a workflow to an XML file
+--------------------------------
+
+Typically a workflow is built once and executed many times. It is also common
+that workflows are interupted during execution and resumed later in another PHP
+request. To accomodate this it is possible to save and load workflows to XML
+files (or database through the WorkflowDatabaseTiein).
+
+This example shows you how to store a workflow to an XML file. The example
+assumes the workflow can be found in the $workflow variable.
+
+.. include:: tutorial_example_02.php
+   :literal:
+
+Loading a workflow from an XML file
+-----------------------------------
+
+It is of course also possible to load a workflow that has been saved to disk.
+
+.. include:: tutorial_example_03.php
+   :literal:
+
+Visualizing a workflow using GraphViz
+-------------------------------------
+
+It is possible to write visitors that traverse the workflow graph. One example
+of this is the GraphViz visitor that generates a viewable graph representation
+of the workflow. The GraphViz visitor uses the __tostring methods on the nodes
+to get names for the nodes.
+
+.. include:: tutorial_example_06.php
+   :literal:
+
+.. include:: tutorial_example_06.dot
+   :literal:
+
+.. figure:: img/tutorial_example_06.png
+
+Workflow Execution Usage
+========================
+
+For examples on how to execute workflows see the `WorkflowDatabaseTiein`_ tutorial.
+
+.. _WorkflowDatabaseTiein: introduction_WorkflowDatabaseTiein.html
+
+Execution Plugins
+-----------------
+
+The workflow engine can be customized and extended through a plugin system. A
+plugin is an object of a class that extends ezcWorkflowExecutionPlugin and that
+is registered with the execution object using the addPlugin() method.
+
+The following methods are automatically invoked during the workflow execution
+after the respective event has been handled:
+
+- afterExecutionStarted()
+- afterExecutionSuspended()
+- afterExecutionResumed()
+- afterExecutionCancelled()
+- afterExecutionEnded()
+- afterNodeActivated()
+- afterNodeExecuted()
+- afterThreadStarted()
+- afterThreadEnded()
+- afterVariableSet()
+- afterVariableUnset()
+
+The above methods only allow read access to the events that they handle and are
+usually used to log workflow execution.
+
+The following methods are automatically invoked during the workflow execution
+before the respective event is handled:
+
+- beforeNodeActivated()
+- beforeVariableSet()
+- beforeVariableUnset()
+
+The above methods allow both read and write access to the events that they
+handle and may be used to change the behaviour of the workflow execution.
+
+The `WorkflowSignalSlotTiein` component allows you to hook into the workflow
+execution into using the SignalSlot component. Details can be found in its
+documentation.
+
+.. _WorkflowSignalSlotTiein: introduction_WorkflowSignalSlotTiein.html
+
+Execution Listeners
+-------------------
+
+Objects of classes that implement the ezcWorkflowExecutionListener interface can
+be registered as listeners with an ezcWorkflowExecution object to receive
+messages during the execution of a workflow.
+
+The ezcWorkflowEventLogListener class that is provided by the `WorkflowEventLogTiein`_
+component is the reference implementation of this interface. You can find an
+example on how to register execution listeners in its documentation.
+
+.. _WorkflowEventLogTiein: introduction_WorkflowEventLogTiein.html
+
+..
+   Local Variables:
+   mode: rst
+   fill-column: 79
+   End: 
+   vim: et syn=rst tw=79
