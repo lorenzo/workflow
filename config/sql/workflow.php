@@ -24,7 +24,7 @@ class WorkflowSchema extends CakeSchema {
 		'id' => array('type' => 'integer', 'null' => false, 'default' => NULL, 'length' => 10, 'key' => 'primary'),
 		'workflow_id' => array('type' => 'integer', 'null' => false, 'length' => 10),
 		'parent_id' => array('type' => 'integer', 'null' => false, 'length' => 10, 'key' => 'index'),
-		'started' => array('type' => 'timestamp', 'null' => false, 'default' => 'CURRENT_TIMESTAMP'),
+		'started' => array('type' => 'timestamp', 'null' => false),
 		'variables' => array('type' => 'text', 'null' => false),
 		'waiting_for' => array('type' => 'text', 'null' => false),
 		'threads' => array('type' => 'text', 'null' => false),

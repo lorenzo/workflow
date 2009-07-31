@@ -43,14 +43,15 @@ class CakeWorkflowExecutionTestCase extends CakeTestCase {
 	
 	private function buildWorkflow() {
 			$workflow = new ezcWorkflow( 'Test' );
+			$initNode = new ezcWorkflowNodeVariableSet(array('init' => 'testValue'));
 			$input = new ezcWorkflowNodeInput(
 				array( 'choice' => new ezcWorkflowConditionIsBool )
 			);
 
-			$workflow->startNode->addOutNode( $input );
+			$workflow->startNode->addOutNode( $initNode );
+			$initNode->addOutNode($input); 
 			$branch = new ezcWorkflowNodeExclusiveChoice;
 			$branch->addInNode( $input );
-
 			$trueNode = new ezcWorkflowNodeAction( array( 'class' => 'MyServiceTestObject',
 			 'arguments' => array( 'message: TRUE' ) )
 			);
@@ -78,10 +79,25 @@ class CakeWorkflowExecutionTestCase extends CakeTestCase {
 		$workflow = $this->Definition->loadByName('Test');
 		$execution = new CakeWorkflowExecution();
 		$execution->workflow = $workflow;
-		$execution->start();
-		$execution->resume(array('choice' => true));
-		debug($execution->getVariables());
-		$this->assertFalse($execution->hasEnded());
+		$id = $execution->start();
+		$this->assertEqual(1,count($execution->getActivatedNodes()));
+		$this->assertTrue($execution->isSuspended());
+		//At this point the execution is automatically suspended waiting for an input varible "choice"
+		//Lets resume it from anther excecution object
+		$execution = new CakeWorkflowExecution($id);
+		$this->assertEqual('testValue',$execution->getVariable('init'));
+		$waitingFor = $execution->getWaitingFor();
+		$this->assertEqual('choice',key($execution->getWaitingFor()));
+		
+		//Let's cancell it
+		$execution->cancel();
+		// And try to resume it again
+		try {
+			$execution = new CakeWorkflowExecution($id);
+		} catch (Exception $e) {
+			$this->assertNotNull($e->getMessage());
+		}
+		
 	}
 	
 }

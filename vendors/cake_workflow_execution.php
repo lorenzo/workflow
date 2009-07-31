@@ -3,6 +3,7 @@
 class CakeWorkflowExecution extends ezcWorkflowExecution {
 	
 	private $Execution;
+	protected $loaded;
 	
 	public function __construct ($executionId = null) {
 		if ($executionId !== null && !is_int( $executionId)){
@@ -57,10 +58,8 @@ class CakeWorkflowExecution extends ezcWorkflowExecution {
 	}
 	
 	protected function doEnd() {
-		if (!$this->isCancelled()) {
-			$this->Execution->deleteAll(array('WorkflowExecution.id' => $this->id));
-			$this->Execution->State->deleteAll(array('execution_id' => $this->id));
-		}
+		$this->Execution->deleteAll(array('WorkflowExecution.id' => $this->id));
+		$this->Execution->State->deleteAll(array('execution_id' => $this->id));
 	}
 	
 	protected function doGetSubExecution($id = null) {
@@ -84,10 +83,10 @@ class CakeWorkflowExecution extends ezcWorkflowExecution {
 		
       $activatedNodes = array();
 		foreach ($execution['State'] as $state) {
-			$activatedNodes[$row['node_id']] = array(
+			$activatedNodes[$state['node_id']] = array(
 				'state' => $state['state'],
 				'activated_from' => $state['activated_from'],
-				'thread_id' => $row['thread_id']
+				'thread_id' => $state['thread_id']
 			);
 		}
 		
@@ -96,8 +95,8 @@ class CakeWorkflowExecution extends ezcWorkflowExecution {
 			if (isset($activatedNodes[$nodeId])) {
 				$node->setActivationState(ezcWorkflowNode::WAITING_FOR_EXECUTION);
 				$node->setThreadId($activatedNodes[$nodeId]['thread_id']);
-				$node->setState(unserialize( $activatedNodes[$nodeId]['state'], null));
-				$node->setActivatedFrom(unserialize( $activatedNodes[$nodeId]['activated_from']));
+				$node->setState(unserialize($activatedNodes[$nodeId]['state']));
+				$node->setActivatedFrom(unserialize($activatedNodes[$nodeId]['activated_from']));
 				$this->activate( $node, false );
 			}
 		}
