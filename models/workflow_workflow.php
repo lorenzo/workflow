@@ -40,7 +40,7 @@ class WorkflowWorkflow extends WorkflowAppModel Implements ezcWorkflowDefinition
 		foreach ($nodes as $node) {
 			$data['Node'] = array(
 				'class' => get_class($node),
-				'configuration' => serialize($node->getConfiguration()),
+				'configuration' => addslashes(serialize($node->getConfiguration())),
 				'workflow_id' => $this->id
 			);
 			$this->Node->create();
@@ -104,7 +104,7 @@ class WorkflowWorkflow extends WorkflowAppModel Implements ezcWorkflowDefinition
 		$mappedNodes = array();
 		
 		foreach ($workflow['Node'] as $i => $node) {
-			$configuration = unserialize($node['configuration']);
+			$configuration = unserialize(stripslashes($node['configuration']));
 			
 			if (is_null($configuration)) {
 				$configuration = ezcWorkflowUtil::getDefaultConfiguration($node['class']);
