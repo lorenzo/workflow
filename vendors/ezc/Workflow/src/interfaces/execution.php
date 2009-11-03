@@ -638,6 +638,10 @@ abstract class ezcWorkflowExecution
      */
     public function endThread( $threadId )
     {
+        if ($threadId === false || is_null($threadId)) {
+            return;
+        }
+        
         if ( isset( $this->threads[$threadId] ) )
         {
             unset( $this->threads[$threadId] );
