@@ -2,7 +2,7 @@
 class WorkflowWorkflow extends WorkflowAppModel Implements ezcWorkflowDefinitionStorage {
 	var $name = 'WorkflowWorkflow';
 	var $displayField = 'name';
-	//The Associations below have been created with all possible keys, those that are not needed can be removed
+
 	var $hasMany = array(
 		'Node' => array(
 			'className' => 'Workflow.WorkflowNode',
@@ -23,7 +23,7 @@ class WorkflowWorkflow extends WorkflowAppModel Implements ezcWorkflowDefinition
 		$workflow->verify();
 		$version = $this->currentVersion($workflow->name) + 1;
 		
-		$db = ConnectionManager::getDataSource('default');
+		$db = $this->getDataSource();
 		$db->begin($this);
 		
 		$data = array();
