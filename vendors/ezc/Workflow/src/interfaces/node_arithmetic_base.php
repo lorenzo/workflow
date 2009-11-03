@@ -95,6 +95,11 @@ abstract class ezcWorkflowNodeArithmeticBase extends ezcWorkflowNode
             );
         }
 
+        if ( is_string( $this->configuration ) )
+        {
+            $this->operand = $execution->getVariable( $this->configuration );
+        }
+
         if ( is_numeric( $this->configuration['operand'] ) )
         {
             $this->operand = $this->configuration['operand'];
